@@ -44,6 +44,9 @@ namespace QRDecoder
         // The QR Decoder variable from ZXing
         MDecoder decoder;
 
+
+        delegate void SetPictureCallback(Bitmap bmp);
+
         public MainForm()
         {
             InitializeComponent();
@@ -122,6 +125,14 @@ namespace QRDecoder
             }
         }
 
+
+        private void SetPicture(Bitmap bmp)
+        {
+            streamBitmap = bmp;
+            pictureBox1.Image = bmp;
+            pictureBox1.Refresh();
+        }
+
         // This event will be triggered whenever a new image is being captured by the webcam, minimum 25 frame per minute
         // Depending in the webcam capability.
         void videoSource_NewFrame(object sender, NewFrameEventArgs eventArgs)
@@ -130,14 +141,26 @@ namespace QRDecoder
             {
                 streamBitmap = (Bitmap)eventArgs.Frame.Clone();
                 safeTempstreamBitmap = (Bitmap)streamBitmap.Clone();
-                pictureBox1.Image = streamBitmap;
-                pictureBox1.Refresh();
+                if (pictureBox1.InvokeRequired)
+                {
+
+                    var d = new SetPictureCallback(SetPicture);
+                    this.Invoke(d, new object[] { streamBitmap });
+                }
+                else
+                {
+                    pictureBox1.Image = streamBitmap;
+                    pictureBox1.Refresh();
+                }
+        
 
             }catch(Exception exp)
             {
                 Console.Write(exp.Message);
             }
         }
+
+
 
         private void button1_Click(object sender, EventArgs e)
         {
